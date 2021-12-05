@@ -21,9 +21,9 @@ class UserController extends Controller {
 
     #[Get('/{email}/{password}')]
     public function getFromEmailAndPassword() {
-        $result = User::getFromEmailAndPassword($this->email, $this->password);
+        $result = User::getFromEmailAndPassword(str_replace('+', '.', $this->email), $this->password);
 
-        if ($result) \set_response_code(404);
+        if ($result) \http_response_code(404);
         
         return $result ?? [
             'status' => 404,
