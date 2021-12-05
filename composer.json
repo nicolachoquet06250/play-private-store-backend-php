@@ -1,0 +1,22 @@
+{
+    "name": "nchoquet/play-private-store-backend",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "PPS\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Nicolas Choquet",
+            "email": "nicolachoquet06250@gmail.com"
+        }
+    ],
+    "require": {
+        "cboden/ratchet": "^0.4.3",
+        "ratchet/pawl": "^0.4.0",
+        "slim/slim": "4.*",
+        "slim/psr7": "^1.5",
+        "symfony/var-dumper": "^6.0"
+    }
+}

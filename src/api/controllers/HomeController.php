@@ -1,24 +1,19 @@
-# play-private-store-backend
-api + websocket de play-private-store avec PHP 8.1
+<?php
 
-### CLIENT
-```html
-<!DOCTYPE html>
-<html>
-   <head>
-      <meta charset="utf-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <meta name="viewport" content="width=device-width,initial-scale=1.0">
-      <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-      <title> Stricte minimum - connexion websocket </title>
-   </head>
+namespace PPS\api\controllers;
 
-   <body>
+use PPS\http\Controller;
+use PPS\decorators\Controller as RouteGroup;
+use PPS\decorators\Get;
 
-   </body>
+#[RouteGroup('/')]
+class HomeController extends Controller {
 
-   <script>
-      (() => {
+    #[Get('')]
+    public function home(): string {
+        return <<<HTML
+    <script>
+        (() => {
          const ws = new WebSocket('ws://localhost:8001/ws');
 
          const actions = {
@@ -54,13 +49,14 @@ api + websocket de play-private-store avec PHP 8.1
             
             const { channel, type, data: _data } = JSON.parse(data);
             
-            if (`${type}_${channel}` in actions) {
-               actions[`${type}_${channel}`](channel, type, _data);
+            if (`\${type}_\${channel}` in actions) {
+               actions[`\${type}_\${channel}`](channel, type, _data);
             } else {
                console.log(JSON.parse(data))
             }
          })
       })()
-   </script>
-</html>
-```
+    </script>
+HTML;
+    }
+}
