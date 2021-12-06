@@ -1,5 +1,13 @@
 <?php
 
+ini_set('display_errors', 0);
+error_reporting(0);
+// Rapporte les erreurs d'exécution de script
+error_reporting(E_ERROR | E_WARNING | E_PARSE);
+// Rapporter les E_NOTICE peut vous aider à améliorer vos scripts
+// (variables non initialisées, variables mal orthographié
+error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
+
 use \PPS\app\Application;
 use \PPS\api\controllers\{
     UserController,
