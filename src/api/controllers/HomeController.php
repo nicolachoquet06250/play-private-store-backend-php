@@ -92,7 +92,7 @@ class HomeController extends Controller {
                      ],
                      author: 0
                   })
-               }).then(r => r.text()).then(text => console.log(text));
+               }).then(r => r.json()).then(json => console.log(json));
             }, 4000);
          })()
       </script>
