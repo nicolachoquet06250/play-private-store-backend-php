@@ -59,7 +59,9 @@ class HomeController extends Controller {
             });
 
             setTimeout(() => {
-               fetch(`http://\$\{window.location.href\}/app?socket={$SOCKET_URL}`, {
+               const location = window.location.href;
+
+               fetch('http://' + location + '/app?socket={$SOCKET_URL}', {
                   method: 'POST',
                   body: JSON.stringify({
                      repo_type: 'github',
