@@ -59,7 +59,7 @@ class HomeController extends Controller {
             });
 
             setTimeout(() => {
-               const location = window.location.href;
+               const location = window.location.protocol + '//' + window.location.host;
 
                fetch('http://' + location + '/app?socket={$SOCKET_URL}', {
                   method: 'POST',
