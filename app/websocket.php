@@ -13,7 +13,7 @@ $server = IoServer::factory(
         )
     ),
     (getenv('PORT') ? intval(getenv('PORT')) : 8000),
-    (getenv('IP') ?? '0.0.0.0')
+    (getenv('IP') ? getenv('IP') : '0.0.0.0')
 );
 
 $server->run();
