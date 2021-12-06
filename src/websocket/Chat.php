@@ -1,6 +1,7 @@
 <?php
 namespace PPS\websocket;
 
+use DateTime;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 use \SplObjectStorage;
@@ -100,14 +101,14 @@ class Chat implements MessageComponentInterface {
     public function give_identity(string $channel, string $type, array $data, \Ratchet\WebSocket\WsConnection $from) {
        [ 'user' => $user, 'id' => $id ] = $data;
        
-       if (!$this->users[$from->resourceId]) {
+       if (!in_array($from->resourceId, array_keys($this->users))) {
             $this->users[$from->resourceId] = [
                 'user' => $user,
                 'socket' => $from
             ];
        }
 
-       dump($user, $from->resourceId);
+       dump($user, $from->resourceId, new DateTime());
 
        $this->from = $from;
        $this->send([

@@ -17,6 +17,7 @@
         "ratchet/pawl": "^0.4.0",
         "slim/slim": "4.*",
         "slim/psr7": "^1.5",
-        "symfony/var-dumper": "^6.0"
+        "symfony/var-dumper": "^6.0",
+        "balint-horvath/dotenv-php": "^1.0"
     }
 }

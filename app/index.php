@@ -1,9 +1,5 @@
 <?php
 
-use Psr\Http\Message\{
-    ResponseInterface as Response,
-    ServerRequestInterface as Request
-};
 use \PPS\app\Application;
 use \PPS\api\controllers\{
     UserController,
@@ -15,6 +11,10 @@ use \PPS\middlewares\{
 };
 
 require __DIR__ . '/../vendor/autoload.php';
+
+define('__ROOT__', realpath(__DIR__ . '/../'));
+
+$dotenv = new \BalintHorvath\DotEnv\DotEnv(__ROOT__);
 
 header("Access-Control-Allow-Origin: *");
 
