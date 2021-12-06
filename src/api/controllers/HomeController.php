@@ -63,6 +63,9 @@ class HomeController extends Controller {
 
                fetch(location + '/app?socket={$SOCKET_URL}', {
                   method: 'POST',
+                  headers: {
+                     'Content-Type': 'application/json'
+                  }, 
                   body: JSON.stringify({
                      repo_type: 'github',
                      name: 'Budget Management 1',
