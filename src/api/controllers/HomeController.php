@@ -16,7 +16,7 @@ class HomeController extends Controller {
       return <<<HTML
       <script>
          (() => {
-            const ws = new WebSocket('ws://play-private-store.ws.localhost:8001');
+            const ws = new WebSocket('{$SOCKET_URL}');
 
             const actions = {
                ask_identity(channel, type, data) {
