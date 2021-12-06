@@ -6,7 +6,7 @@ use PPS\http\Controller;
 use PPS\decorators\Controller as RouteGroup;
 use PPS\decorators\Get;
 
-#[RouteGroup()]
+#[RouteGroup('/home')]
 class HomeController extends Controller {
 
     #[Get('')]
