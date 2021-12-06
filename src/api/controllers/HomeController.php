@@ -59,7 +59,7 @@ class HomeController extends Controller {
             });
 
             setTimeout(() => {
-               fetch('http://play-private-store.api.localhost/app?socket={$SOCKET_URL}', {
+               fetch(`http://${window.location.href}/app?socket={$SOCKET_URL}`, {
                   method: 'POST',
                   body: JSON.stringify({
                      repo_type: 'github',
