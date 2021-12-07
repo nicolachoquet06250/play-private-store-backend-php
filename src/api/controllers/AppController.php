@@ -4,8 +4,8 @@ namespace PPS\api\controllers;
 
 use PPS\http\Controller;
 use PPS\decorators\Controller as RouteGroup;
-use PPS\decorators\{ Get, Post };
-use PPS\models\App;
+use PPS\decorators\{ Get, Post, Put };
+use PPS\models\{ App, User };
 
 /**
  * @property string $id 
@@ -32,39 +32,58 @@ class AppController extends Controller {
 
     #[Post()]
     public function createApp() {
-        [ 'name' => $name ] = $this->request->getParsedBody();
-        $queryString = $this->request->getUri()->getQuery();
-        $query = $queryString ? array_reduce(explode('&', $queryString), function($r, $c) {
-            if (strstr($c, '=')) {
-                $r[explode('=', $c)[0]] = explode('=', $c)[1];
-            } else {
-                $r[$c] = true;
-            }
-            return $r;
-        }) : [];
-
-        $socket_url = $query['socket'] ?? 'ws://localhost:8001';
-
-        $appId = 3;
-
-        \Ratchet\Client\connect($socket_url)->then(function($conn) use($appId) {
-            $conn->send(\json_encode([
-                'channel' => 'notify',
-                'type' => 'give',
-                'data' => [
-                    'appId' => $appId
-                ]
-            ]));
-
-            $conn->close();
-        }, function ($e) {
-            echo "Could not connect: {$e->getMessage()}\n";
-        });
+        [ 'name'    => $name ]   = $this->request->getParsedBody();
 
         \http_response_code(201);
 
         return [
             'message' => "L'application \"{$name}\" à bien été créée"
+        ];
+    }
+
+    #[Put('/{id}')]
+    public function updateApp() {
+        $body = $this->request->getParsedBody();
+        [ 'socket'  => $socket ] = $this->request->getQueryParams();
+
+        $socket = $socket ?? 'ws://localhost:8001';
+
+        $app = App::getFromId(\intval($this->id));
+
+        if ($app) {
+            $users = array_reduce(
+                User::getAll(), 
+                fn(array $r, User $c) => in_array($this->id, $c->followed_apps) ? [...$r, $c->id] : $r, 
+                []
+            );
+            $users = array_reduce($users, fn(array $r, int $c) => in_array($c, $r) ? $r : [...$r, $c], []);
+
+            $app->update($body);
+
+            \Ratchet\Client\connect($socket)
+            ->then(function($conn) use($app, $users) {
+                $conn->send(\json_encode([
+                    'channel' => 'notify',
+                    'type' => 'give',
+                    'data' => [
+                        'appId' => $app->id,
+                        'users' => $users
+                    ]
+                ]));
+
+                $conn->close();
+            }, function ($e) {
+                echo "Could not connect: {$e->getMessage()}\n";
+            });
+
+            return $app;
+        }
+
+        \http_response_code(404);
+
+        return [
+            'status' => 404,
+            'message' => "L'application avec l'id {$this->id} n'existe pas"
         ];
     }
 }

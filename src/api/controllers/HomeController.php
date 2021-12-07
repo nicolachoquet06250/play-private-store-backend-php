@@ -43,6 +43,10 @@ class HomeController extends Controller {
 
                received_identity() {
                   console.log('identitée bien reçue');
+               },
+
+               give_notify(channel, type, data) {
+                  console.log(data);
                }
             };
             
@@ -61,8 +65,8 @@ class HomeController extends Controller {
             setTimeout(() => {
                const location = window.location.protocol + '//' + window.location.host;
 
-               fetch(location + '/app?socket={$SOCKET_URL}', {
-                  method: 'POST',
+               fetch(location + '/app/1?socket={$SOCKET_URL}', {
+                  method: 'PUT',
                   headers: {
                      'Content-Type': 'application/json'
                   }, 

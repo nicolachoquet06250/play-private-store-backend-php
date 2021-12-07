@@ -23,11 +23,11 @@ class User {
 
     static public function getAll() {
         return [
-            new User(0, 'Nicolas', 'Choquet', 'nchoquet@norsys.fr',[ 
+            new User(1, 'Nicolas', 'Choquet', 'nchoquet@norsys.fr',[ 
                 'github' => 'nicolachoquet06250',
                 'gitlab' => 'nicolachoquet06250'
             ] , 'nchoquet', [1]),
-            new User(0, 'Jonhatan', 'Boyer', 'jboyer@norsys.fr',[ 
+            new User(2, 'Jonhatan', 'Boyer', 'jboyer@norsys.fr',[ 
                 'github' => 'grafikart',
                 'gitlab' => ''
             ], 'grafikart', [1])
@@ -37,5 +37,9 @@ class User {
     static public function getFromEmailAndPassword(string $email, string $password): User|null {
         return array_reduce(static::getAll(), fn(User|null $r, User $c) => 
             $c->email === $email && $c->password === $password ? $c : $r, null);
+    }
+
+    public function update(array $user) {
+
     }
 }
