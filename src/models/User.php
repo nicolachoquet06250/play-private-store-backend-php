@@ -3,8 +3,9 @@
 namespace PPS\models;
 
 use \PPS\enums\Repos; 
+use \PPS\app\Model;
 
-class User {
+class User extends Model {
     public function __construct(
         public int $id,
         public string $firstname,
@@ -21,7 +22,7 @@ class User {
         public array $followed_apps = []
     ) {}
 
-    static public function getAll() {
+    public static function defineDefaultFakeData(): array {
         return [
             new User(1, 'Nicolas', 'Choquet', 'nchoquet@norsys.fr',[ 
                 'github' => 'nicolachoquet06250',
@@ -37,9 +38,5 @@ class User {
     static public function getFromEmailAndPassword(string $email, string $password): User|null {
         return array_reduce(static::getAll(), fn(User|null $r, User $c) => 
             $c->email === $email && $c->password === $password ? $c : $r, null);
-    }
-
-    public function update(array $user) {
-
     }
 }

@@ -4,7 +4,7 @@ namespace PPS\api\controllers;
 
 use PPS\http\Controller;
 use PPS\decorators\Controller as RouteGroup;
-use PPS\decorators\{ Get, Post, Put };
+use PPS\decorators\{ Get, Post, Put, Delete };
 use PPS\models\{ App, User };
 
 /**
@@ -85,5 +85,21 @@ class AppController extends Controller {
             'status' => 404,
             'message' => "L'application avec l'id {$this->id} n'existe pas"
         ];
+    }
+
+    #[Delete('/{id}')]
+    public function deleteApp() {
+        if (App::getFromId(intval($this->id))?->remove()) {
+            \http_response_code(204);
+
+            return App::getAll();
+        } else {
+            \http_response_code(500);
+
+            return [
+                'status' => 500,
+                'message' => "Une erreur est survenue lors de la suppression de l'application"
+            ];
+        }
     }
 }

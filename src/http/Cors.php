@@ -16,7 +16,7 @@ namespace PPS\http;
 class Cors {
     public static function enable() {
         // Allow from any Origin
-        if (!empty(($origin = getallheaders()['Origin']))) {
+        if (!empty(($origin = (getallheaders()['Origin'] ?? '')))) {
             // Decide if the Origin in $_SERVER['HTTP_Origin'] is one
             // you want to allow, and if so:
             header("Access-Control-Allow-Origin: {$origin}");

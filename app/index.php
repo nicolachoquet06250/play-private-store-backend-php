@@ -1,6 +1,6 @@
 <?php
 
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);
 // error_reporting(E_ALL);
 // Rapporte les erreurs d'exécution de script
 error_reporting(E_ERROR | E_WARNING | E_PARSE);

@@ -3,8 +3,9 @@
 namespace PPS\models;
 
 use \PPS\enums\Repos; 
+use \PPS\app\Model;
 
-class App {
+class App extends Model {
     public function __construct(
         public int $id,
         public Repos $repo_type,
@@ -35,7 +36,7 @@ class App {
         public array $comments = []
     ) {}
 
-    static public function getAll() {
+    public static function defineDefaultFakeData(): array {
         return [
             new App(
                 1, Repos::GITHUB, 'Budget Management 1', 
@@ -48,11 +49,11 @@ class App {
                     'monnaitaire',
                     'argent'
                 ], [
-                   new Comment(
-                       1, 
-                       'Je suis très satisfait de cette application.', 
-                       3.5, 
-                       '2021-11-24'
+                new Comment(
+                    1, 
+                    'Je suis très satisfait de cette application.', 
+                    3.5, 
+                    '2021-11-24'
                     )
                 ]
             ),
@@ -92,61 +93,5 @@ class App {
                 ]
             )
         ];
-    }
-
-    static public function getFromId(int $id): App|null {
-        return array_reduce(static::getAll(), fn(App|null $r, App $c) => 
-            $c->id === $id ? $c : $r, null);
-    }
-
-    public function update(array $app) {
-        if (isset($app['id'])) {
-            $this->id = $app['id'];
-        }
-        if (isset($app['repo_type'])) {
-            $this->repo_type = match($app['repo_type']) {
-                'github' => Repos::GITHUB,
-                'gitlab' => Repos::GITLAB
-            };
-        }
-        if (isset($app['name'])) {
-            $this->name = $app['name'];
-        }
-        if (isset($app['nameSlug'])) {
-            $this->nameSlug = $app['nameSlug'];
-        }
-        if (isset($app['repoName'])) {
-            $this->repoName = $app['repoName'];
-        }
-        if (isset($app['logo'])) {
-            $this->logo = $app['logo'];
-        }
-        if (isset($app['version'])) {
-            $this->version = $app['version'];
-        }
-        if (isset($app['versionSlug'])) {
-            $this->versionSlug = $app['versionSlug'];
-        }
-        if (isset($app['description'])) {
-            $this->description = $app['description'];
-        }
-        if (isset($app['stars'])) {
-            $this->stars = $app['stars'];
-        }
-        if (isset($app['author'])) {
-            $this->author = $app['author'];
-        }
-        if (isset($app['screenshots'])) {
-            $this->screenshots = $app['screenshots'];
-        }
-        if (isset($app['permissions'])) {
-            $this->permissions = $app['permissions'];
-        }
-        if (isset($app['categories'])) {
-            $this->categories = $app['categories'];
-        }
-        if (isset($app['comments'])) {
-            $this->comments = $app['comments'];
-        }
     }
 }
