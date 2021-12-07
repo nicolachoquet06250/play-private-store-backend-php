@@ -4,19 +4,24 @@ namespace PPS\app;
 
 abstract class Model {
     protected static array $items = [];
-    private static bool $defined = false;
+    protected static array $defined = [];
 
-    public abstract static function defineDefaultFakeData(): array;
+    protected static function defineDefaultFakeData(): array {
+        return [];
+    }
 
     /**
      * @return Array<self>
      */
     static public function getAll(): array {
-        if (empty(static::$items) && !static::$defined) {
-            static::$items = static::defineDefaultFakeData();
-            static::$defined = true;
+        $class = static::class;
+
+        if (!isset(static::$items[$class]) || !isset(static::$defined[$class])) {
+            static::$items[$class] = $class::defineDefaultFakeData();
+            static::$defined[$class] = true;
         }
-        return static::$items;
+
+        return $class::$items[$class];
     }
 
     static public function getFromId(int $id): Model|null {
@@ -24,14 +29,16 @@ abstract class Model {
             $c->id === $id ? $c : $r, null);
     }
     
-    public function update(array $item): bool {
-        foreach ($item as $k => $v) {
-            if (isset($this->{$k})) {
-                $this->{$k} = $v;
+    public function update(?array $item): bool {
+        if ($item) {
+            foreach ($item as $k => $v) {
+                if (isset($this->{$k})) {
+                    $this->{$k} = $v;
+                }
             }
-        }
 
-        static::$items = array_map(fn(Model $a) => $a->id === $this->id ? $this : $a, static::$items);
+            static::$items = array_map(fn(Model $a) => $a->id === $this->id ? $this : $a, static::$items);
+        }
 
         return true;
     }

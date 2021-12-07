@@ -3,9 +3,13 @@
 namespace PPS\api\controllers;
 
 use PPS\http\Controller;
-use PPS\decorators\Controller as RouteGroup;
-use PPS\decorators\{ Get, Post, Put, Delete };
+use PPS\app\Websocket;
+use PPS\decorators\{ 
+    Controller as RouteGroup, 
+    Get, Post, Put, Delete
+};
 use PPS\models\{ App, User };
+use PPS\enums\ChannelType;
 
 /**
  * @property string $id 
@@ -33,8 +37,28 @@ class AppController extends Controller {
     #[Post()]
     public function createApp() {
         [ 'name'    => $name ]   = $this->request->getParsedBody();
+        [ 'socket'  => $socket ] = $this->request->getQueryParams();
+
+        $socket = $socket ?? 'ws://localhost:8001';
 
         \http_response_code(201);
+
+        $users = array_map(fn(User $c) => $c->id, User::getAll());
+
+        $apps = App::getAll();
+
+        $nextAppId = count($apps) === 0 ? 0 : $apps[count($apps) - 1]->id + 1;
+
+        (new Websocket($socket))->send(
+            channel: 'notify', 
+            type: ChannelType::GIVE, 
+            data: [
+                'type' => 'created',
+                'appId' => $nextAppId,
+                'appName' => $name,
+                'users' => $users
+            ]
+        );
 
         return [
             'message' => "L'application \"{$name}\" à bien été créée"
@@ -60,21 +84,15 @@ class AppController extends Controller {
 
             $app->update($body);
 
-            \Ratchet\Client\connect($socket)
-            ->then(function($conn) use($app, $users) {
-                $conn->send(\json_encode([
-                    'channel' => 'notify',
-                    'type' => 'give',
-                    'data' => [
-                        'appId' => $app->id,
-                        'users' => $users
-                    ]
-                ]));
-
-                $conn->close();
-            }, function ($e) {
-                echo "Could not connect: {$e->getMessage()}\n";
-            });
+            (new Websocket($socket))->send(
+                channel: 'notify', 
+                type: ChannelType::GIVE, 
+                data: [
+                    'type' => 'updated',
+                    'appId' => $app->id,
+                    'users' => $users
+                ]
+            );
 
             return $app;
         }

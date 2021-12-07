@@ -36,7 +36,7 @@ class App extends Model {
         public array $comments = []
     ) {}
 
-    public static function defineDefaultFakeData(): array {
+    protected static function defineDefaultFakeData(): array {
         return [
             new App(
                 1, Repos::GITHUB, 'Budget Management 1', 

@@ -22,7 +22,7 @@ class User extends Model {
         public array $followed_apps = []
     ) {}
 
-    public static function defineDefaultFakeData(): array {
+    protected static function defineDefaultFakeData(): array {
         return [
             new User(1, 'Nicolas', 'Choquet', 'nchoquet@norsys.fr',[ 
                 'github' => 'nicolachoquet06250',
