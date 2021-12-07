@@ -21,7 +21,8 @@ use \PPS\middlewares\{
 
 require __DIR__ . '/../vendor/autoload.php';
 
-Cors::enable();
+header("Access-Control-Allow-Origin: *");
+//Cors::enable();
 
 define('__ROOT__', realpath(__DIR__ . '/../'));
 
