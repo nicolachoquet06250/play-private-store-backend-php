@@ -9,6 +9,7 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 //error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 
 use \PPS\app\Application;
+use \PPS\http\Cors;
 use \PPS\api\controllers\{
     UserController,
     AppController,
@@ -20,7 +21,7 @@ use \PPS\middlewares\{
 
 require __DIR__ . '/../vendor/autoload.php';
 
-header("Access-Control-Allow-Origin: *");
+Cors::enable();
 
 define('__ROOT__', realpath(__DIR__ . '/../'));
 
