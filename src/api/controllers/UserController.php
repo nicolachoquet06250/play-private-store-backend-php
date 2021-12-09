@@ -34,15 +34,31 @@ class UserController extends Controller {
 
     #[Post()]
     public function createUser() {
+        $createdUser = $this->request->getParsedBody();
         [
-           'firstname' => $firstname,
-           'lastname' => $lastname
-        ] = $this->request->getParsedBody();
-        http_response_code(201);
-        
-        return [
-            'message' => "L'utilisateur {$firstname} {$lastname} à bien été créé"
-        ];
+            'firstname' => $firstname, 
+            'lastname' => $lastname
+        ] = $createdUser;
+
+        try {
+            http_response_code(201);
+
+            $user = User::fromArray($createdUser);
+
+            $user->create();
+            
+            return [
+                'message' => "L'utilisateur {$firstname} {$lastname} à bien été créé",
+                'user' => $user
+            ];
+        } catch (\Exception $e) {
+            http_response_code(500);
+            
+            return [
+                'status' => 500,
+                'message' => "L'utilisateur que vous tentez de créer n'est pas complet"
+            ];
+        }
     }
 
     #[Put('/{id}')]

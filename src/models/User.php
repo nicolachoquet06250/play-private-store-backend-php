@@ -4,23 +4,42 @@ namespace PPS\models;
 
 use \PPS\enums\Repos; 
 use \PPS\app\Model;
+use \PPS\decorators\{
+    db\Integer,
+    db\Varchar,
+    db\Json
+};
 
 class User extends Model {
     public function __construct(
+        #[Integer(
+            primaryKey: true,
+            autoIncrement: true
+        )]
         public int $id,
+        #[Varchar]
         public string $firstname,
+        #[Varchar]
         public string $lastname,
+        #[Varchar]
         public string $email,
+        #[Json]
         /**
          * @param Array<Repos, string> $repo_pseudo
          */
         public array $repo_pseudo,
+        #[Varchar]
         public string $password,
+        #[Json(
+            default: '[]'
+        )]
         /**
          * @param Array<int>
          */
         public array $followed_apps = []
-    ) {}
+    ) {
+        parent::__construct();
+    }
 
     protected static function defineDefaultFakeData(): array {
         return [

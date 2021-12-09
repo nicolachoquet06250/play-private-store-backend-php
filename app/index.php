@@ -8,7 +8,10 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 // (variables non initialisées, variables mal orthographié
 //error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 
-use \PPS\app\Application;
+use \PPS\app\{
+    Application,
+    Model
+};
 use \PPS\http\Cors;
 use \PPS\api\controllers\{
     UserController,
@@ -26,6 +29,8 @@ Cors::enable();
 define('__ROOT__', realpath(__DIR__ . '/../'));
 
 $dotenv = new \BalintHorvath\DotEnv\DotEnv(__ROOT__);
+
+Model::setDBPlugin('sqlite:' . __ROOT__ . '/{table}.db');
 
 $app = new Application();
 

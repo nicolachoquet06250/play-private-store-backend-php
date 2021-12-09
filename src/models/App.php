@@ -4,37 +4,73 @@ namespace PPS\models;
 
 use \PPS\enums\Repos; 
 use \PPS\app\Model;
+use \PPS\decorators\db\{
+    Integer,
+    Varchar,
+    Real,
+    Json
+};
 
 class App extends Model {
     public function __construct(
+        #[Integer(
+            primaryKey: true,
+            autoIncrement: true
+        )]
         public int $id,
+        #[Varchar]
         public Repos $repo_type,
+        #[Varchar]
         public string $name,
+        #[Varchar]
         public string $nameSlug,
+        #[Varchar]
         public string $repoName,
+        #[Varchar]
         public string $logo,
+        #[Varchar]
         public string $version,
+        #[Varchar]
         public string $versionSlug,
+        #[Varchar(
+            nullable: true
+        )]
         public ?string $description,
+        #[Real]
         public float $stars,
+        #[Integer]
         public int $author,
+        #[Json(
+            default: '[]'
+        )]
         /**
          * @param string[] $screenshots 
          */
         public array $screenshots = [],
+        #[Json(
+            default: '[]'
+        )]
         /**
          * @param string[] $permissions 
          */
         public array $permissions = [],
+        #[Json(
+            default: '[]'
+        )]
         /**
          * @param string[] $categories 
          */
         public array $categories = [],
+        #[Json(
+            default: '[]'
+        )]
         /**
          * @param Comment[] $comments 
          */
         public array $comments = []
-    ) {}
+    ) {
+        parent::__construct();
+    }
 
     protected static function defineDefaultFakeData(): array {
         return [

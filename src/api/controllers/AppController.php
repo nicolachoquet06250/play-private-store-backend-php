@@ -36,7 +36,7 @@ class AppController extends Controller {
 
     #[Post()]
     public function createApp() {
-        [ 'name'    => $name ]   = $this->request->getParsedBody();
+        $createdApp = $this->request->getParsedBody();
         [ 'socket'  => $socket ] = $this->request->getQueryParams();
 
         $socket = $socket ?? 'ws://localhost:8001';
@@ -45,23 +45,24 @@ class AppController extends Controller {
 
         $users = array_map(fn(User $c) => $c->id, User::getAll());
 
-        $apps = App::getAll();
+        $app = \PPS\models\App::fromArray($createdApp);
 
-        $nextAppId = count($apps) === 0 ? 0 : $apps[count($apps) - 1]->id + 1;
+        $app->create();
 
         (new Websocket($socket))->send(
             channel: 'notify', 
             type: ChannelType::GIVE, 
             data: [
                 'type' => 'created',
-                'appId' => $nextAppId,
-                'appName' => $name,
+                'appId' => $app->id,
+                'appName' => $app->name,
                 'users' => $users
             ]
         );
 
         return [
-            'message' => "L'application \"{$name}\" à bien été créée"
+            'message' => "L'application \"{$app->name}\" à bien été créée",
+            'app' => $app
         ];
     }
 
