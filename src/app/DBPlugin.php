@@ -17,11 +17,15 @@ abstract class DBPlugin {
         return explode('/', $appName)[1];
     }
 
-    public function getTable(Model $model): string {
-        $class = $model::class;
+    public function getTable(Model|string $model): string {
+        $class = is_string($model) ? $model : $model::class;
         $table = explode('\\', $class)[count(explode('\\', $class)) - 1];
         return strtolower($table);
     }
+
+    public abstract function getFrom(string $field, mixed $value, string $modelClass): array;
+
+    public abstract function getAll(string $modelClass): array;
 
     public abstract function createLine(Model &$model): bool;
 

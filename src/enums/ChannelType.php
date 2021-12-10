@@ -20,6 +20,9 @@ enum ChannelType: string {
             'ask' => ChannelType::ASK,
             'give' => ChannelType::GIVE,
             'received' => ChannelType::RECEIVED,
+            '"ask"' => ChannelType::ASK,
+            '"give"' => ChannelType::GIVE,
+            '"received"' => ChannelType::RECEIVED,
             default => null
         };
     }

@@ -17,6 +17,8 @@ enum Repos: string {
         return match($value) {
             'github' => Repos::GITHUB,
             'gitlab' => Repos::GITLAB,
+            '"github"' => Repos::GITHUB,
+            '"gitlab"' => Repos::GITLAB,
             default => null
         };
     }

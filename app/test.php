@@ -3,10 +3,12 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-use PPS\models\User;
-use PPS\models\App;
+use PPS\models\{
+    User, App
+};
 use PPS\app\Model;
 use PPS\db\SQLiteDbPlugin;
+use PPS\enums\Repos;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -14,7 +16,7 @@ define('__ROOT__', realpath(__DIR__ . '/../'));
 
 Model::setDBPlugin(new SQLiteDbPlugin());
 
-$user = User::fromArray([
+/*$user = User::fromArray([
     'firstname' => 'Nicolas',
     'lastname' => 'Choquet',
     'email' => 'nchoquet@test.fr',
@@ -23,13 +25,15 @@ $user = User::fromArray([
         'gitlab' => ''
     ],
     'password' => 'toto'
-]);
+]);*/
 
-/*if ($user->createTable()) {
-    dump('La table user à été créé avec succès dans la base de données');
-}*/
+foreach (User::defineDefaultFakeData() as $user) {
+    $user->create();
+}
 
-$user->create();
+dump(User::getAll());
+
+/*$user->create();
 
 dump($user);
 
@@ -37,7 +41,7 @@ $user->update([
     'lastname' => 'Amgar'
 ]);
 
-dump($user);
+dump($user);*/
 
 /*$user->delete();
 
@@ -45,8 +49,8 @@ dump($user);*/
 
 echo '--------------------------------------------------------------------------------------------------------------------------------------------';
 
-$app = App::fromArray([
-    'repo_type' => PPS\enums\Repos::GITHUB,
+/*$app = App::fromArray([
+    'repo_type' => Repos::GITHUB,
     'name' => 'Test',
     'nameSlug' => 'test',
     'repoName' => 'test',
@@ -56,13 +60,15 @@ $app = App::fromArray([
     'description' => null,
     'stars' => 3.5,
     'author' => 1
-]);
+]);*/
 
-/*if ($app->createTable()) {
-    dump('La table app à été créé avec succès dans la base de données');
-}*/
+foreach (App::defineDefaultFakeData() as $app) {
+    $app->create();
+}
 
-$app->create();
+dump(App::getAll());
+
+/*$app->create();
 
 dump($app);
 
@@ -70,7 +76,7 @@ $app->update([
     'name' => 'LOLILOL'
 ]);
 
-dump($app);
+dump($app);*/
 
 /*$app->delete();
 

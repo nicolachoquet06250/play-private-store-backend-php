@@ -103,8 +103,15 @@ abstract class Model {
     static public function getAll(): array {
         $class = static::class;
 
-        if (!isset(static::$items[$class]) || !isset(static::$defined[$class])) {
-            static::$items[$class] = $class::defineDefaultFakeData();
+        $results = static::$DBPlugin?->getAll($class);
+
+        if (is_null($results)) {
+            if (!isset(static::$items[$class]) || !isset(static::$defined[$class])) {
+                static::$items[$class] = $class::defineDefaultFakeData();
+                static::$defined[$class] = true;
+            }
+        } else {
+            static::$items[$class] = $results;
             static::$defined[$class] = true;
         }
 
@@ -130,7 +137,7 @@ abstract class Model {
             );
         }
 
-        return static::$DBPlugin->updateLine($this->id, $this);
+        return static::$DBPlugin?->updateLine($this->id, $this);
     }
 
     public function delete(): bool {
@@ -139,12 +146,12 @@ abstract class Model {
             fn(array $r, Model $c) => $c->id === $this->id ? $r : [...$r, $c], 
             []
         );
-        return static::$DBPlugin->deleteLine($this);
+        return static::$DBPlugin?->deleteLine($this);
     }
 
     public function create(): self {
         static::$items[static::class][] = $this;
-        static::$DBPlugin->createLine($this);
+        static::$DBPlugin?->createLine($this);
         return $this;
     }
 }

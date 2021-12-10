@@ -27,6 +27,115 @@ class SQLiteDbPlugin extends DBPlugin {
         return new PDO(...$connectionArray);
     }
 
+    public function getAll(string $modelClass): array {
+        $request = "SELECT * FROM {$this->getTable($modelClass)}";
+
+        $r = $this->getPDO([
+            'db' => $this->getDatabase()
+        ])->prepare($request);
+        $r->execute();
+
+        $results = $r->fetchAll(PDO::FETCH_ASSOC);
+
+        $finalResult = [];
+
+        $ref = new \ReflectionClass($modelClass);
+        $properties = array_reduce($ref->getProperties(), fn(array $r, \ReflectionProperty $c) => $c->isStatic() ? $r : [...$r, $c], []);
+
+        $metaProperties = array_reduce($properties, function(array $r, \ReflectionProperty $c) {
+            return [
+                ...$r, 
+                $c->getName() => array_reduce($c->getAttributes(), function(array $r, $c) {
+                    $attribute = $c->newInstance();
+
+                    return [
+                        ...$r, 
+                        ...array_reduce(
+                            (new \ReflectionObject($attribute))->getProperties(), 
+                            fn(array $_r, $_c) => [
+                                ...$_r, 
+                                $_c->getName() => $_c->getValue($attribute)
+                            ], [])
+                        ];
+                }, [])
+            ];
+        }, []);
+
+        foreach ($results as $i => $result) {
+            foreach ($metaProperties as $name => $metaProperty) {
+                if (isset($result[$name])) {
+                    if (!isset($finalResult[$i])) $finalResult[$i] = [];
+
+                    if (isset($metaProperty['json']) && $metaProperty['json']) {
+                        $finalResult[$i][$name] = json_decode($result[$name], true);
+                    } else {
+                        if (substr($result[$name], 0, 1) === '"' && substr($result[$name], -1, 1) === '"') {
+                            $result[$name] = substr($result[$name], 1, -1);
+                        }
+                        $finalResult[$i][$name] = $result[$name];
+                    }
+                }
+            }
+
+            $finalResult[$i] = $modelClass::fromArray($finalResult[$i]);
+        }
+
+        return $finalResult;
+    }
+
+    public function getFrom(string $field, mixed $value, string $modelClass): array {
+        $request = "SELECT * FROM {$this->getTable($modelClass)} WHERE {$field}=?";
+
+        $r = $this->getPDO([
+            'db' => $this->getDatabase()
+        ])->prepare($request);
+        $r->execute([$value]);
+
+        $results = $r->fetchAll(PDO::FETCH_ASSOC);
+
+        $finalResult = [];
+
+        $ref = new \ReflectionClass($modelClass);
+        $properties = array_reduce($ref->getProperties(), fn(array $r, \ReflectionProperty $c) => $c->isStatic() ? $r : [...$r, $c], []);
+
+        $metaProperties = array_reduce($properties, function(array $r, \ReflectionProperty $c) {
+            return [
+                ...$r, 
+                $c->getName() => array_reduce($c->getAttributes(), function(array $r, $c) {
+                    $attribute = $c->newInstance();
+
+                    return [
+                        ...$r, 
+                        ...array_reduce(
+                            (new \ReflectionObject($attribute))->getProperties(), 
+                            fn(array $_r, $_c) => [
+                                ...$_r, 
+                                $_c->getName() => $_c->getValue($attribute)
+                            ], [])
+                        ];
+                }, [])
+            ];
+        }, []);
+
+        foreach ($results as $i => $result) {
+            foreach ($metaProperties as $name => $metaProperty) {
+                if (isset($result[$name])) {
+                    if (!isset($finalResult[$i])) $finalResult[$i] = [];
+
+                    if (isset($metaProperty['json']) && $metaProperty['json']) {
+                        $finalResult[$i][$name] = json_decode($result[$name], true);
+                    } else {
+                        $finalResult[$i][$name] = $result[$name];
+                    }
+                }
+            }
+
+            $finalResult[$i] = $modelClass::fromArray($finalResult[$i]);
+        }
+
+        return $finalResult;
+    }
+
     public function createTable(Model $model): bool {
         $r = new \ReflectionObject($model);
         $properties = $r->getProperties();
@@ -95,8 +204,8 @@ class SQLiteDbPlugin extends DBPlugin {
                     return $props;
                 }, []);
 
-                if ($value || gettype($value) === 'string' && $value === '') {
-                    if (gettype($value) === 'array' || gettype($value) === 'object') {
+                if ($value || is_string($value) && $value === '') {
+                    if (is_array($value) || is_object($value)) {
                         $value = json_encode($value);
                     }
                     $values[$name] = $value;
@@ -106,6 +215,15 @@ class SQLiteDbPlugin extends DBPlugin {
                     $values[$name] = $attributes['default'];
                 } else {
                     throw new \Exception("Le champ '{$name}' doit être remplis pour créer un {$this->getTable($model)} !");
+                }
+
+                if (
+                    !in_array($property->getType()->getName(), ['int', 'float', 'string', 'array']) 
+                    && in_array('fromString', get_class_methods($property->getType()->getName()))
+                ) {
+                    $values[$name] = $property->getType()->getName()::getLabel(
+                        $property->getType()->getName()::fromString($value)
+                    );
                 }
             }
         }
@@ -117,7 +235,7 @@ class SQLiteDbPlugin extends DBPlugin {
 
         $conn = $this->getPDO($model->getDBVariables());
 
-        dump($request, $values);
+        //dump($request, $values);
 
         $r = $conn->prepare($request);
         $r->execute($values);
@@ -132,7 +250,7 @@ class SQLiteDbPlugin extends DBPlugin {
 
         $request = "DELETE FROM {$this->getTable($model)} WHERE id={$id}";
 
-        dump($request);
+        //dump($request);
 
         $r = $this->getPDO($model->getDBVariables())->prepare($request);
         $r->execute();
@@ -162,7 +280,7 @@ class SQLiteDbPlugin extends DBPlugin {
                 }, []);
 
                 if ($value) {
-                    if (gettype($value) === 'array' || gettype($value) === 'object') {
+                    if (is_array($value) || is_object($value)) {
                         $value = json_encode($value);
                     }
                     $values[$name] = $value;
@@ -193,7 +311,7 @@ class SQLiteDbPlugin extends DBPlugin {
 
         $request .= "WHERE id={$id}";
 
-        dump($request, $values);
+        //dump($request, $values);
 
         $r = $this->getPDO($model->getDBVariables())->prepare($request);
         $r->execute($values);

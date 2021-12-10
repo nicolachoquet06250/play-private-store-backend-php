@@ -21,6 +21,7 @@ use \PPS\api\controllers\{
 use \PPS\middlewares\{
     Router, Json
 };
+use PPS\db\SQLiteDbPlugin;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -30,9 +31,9 @@ define('__ROOT__', realpath(__DIR__ . '/../'));
 
 $dotenv = new \BalintHorvath\DotEnv\DotEnv(__ROOT__);
 
-Model::setDBPlugin('sqlite:' . __ROOT__ . '/{table}.db');
-
 $app = new Application();
+
+Model::setDBPlugin(new SQLiteDbPlugin());
 
 $app->use(
     new Json, 

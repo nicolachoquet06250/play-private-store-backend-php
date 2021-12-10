@@ -72,7 +72,7 @@ class App extends Model {
         parent::__construct();
     }
 
-    protected static function defineDefaultFakeData(): array {
+    public static function defineDefaultFakeData(): array {
         return [
             new App(
                 1, Repos::GITHUB, 'Budget Management 1', 

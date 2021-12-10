@@ -4,10 +4,9 @@ namespace PPS\models;
 
 use \PPS\enums\Repos; 
 use \PPS\app\Model;
-use \PPS\decorators\{
-    db\Integer,
-    db\Varchar,
-    db\Json
+use \PPS\decorators\db\{
+    Integer, Varchar,
+    Json, Unique
 };
 
 class User extends Model {
@@ -21,6 +20,7 @@ class User extends Model {
         public string $firstname,
         #[Varchar]
         public string $lastname,
+        #[Unique]
         #[Varchar]
         public string $email,
         #[Json]
@@ -41,7 +41,7 @@ class User extends Model {
         parent::__construct();
     }
 
-    protected static function defineDefaultFakeData(): array {
+    public static function defineDefaultFakeData(): array {
         return [
             new User(1, 'Nicolas', 'Choquet', 'nchoquet@norsys.fr',[ 
                 'github' => 'nicolachoquet06250',
