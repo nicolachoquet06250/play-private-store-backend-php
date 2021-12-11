@@ -10,9 +10,6 @@ abstract class Model {
     protected static DBPlugin|null $DBPlugin = null;
 
     public function __construct() {
-        /*if ($this->createTable()) {
-            dump("La table {$this->getTable()} à été créé avec succès dans la base de données");
-        }*/
         $this->createTable();
     }
 
@@ -81,14 +78,24 @@ abstract class Model {
                 continue;
             }
 
-            if ($itemType === 'string' && !in_array($param->getType()->getName(), ['int', 'float', 'string', 'array']) && in_array('fromString', get_class_methods($param->getType()->getName()))) {
-                $finalParams[$position] = $param->getType()->getName()::fromString($item[$param->getName()]);
+            $paramType = (string)$param->getType();
+
+            if (
+                !in_array($paramType, [
+                    'int', 'float', 'string', 'array', 
+                    '?int', '?float', '?string', '?array'
+                ]) 
+                && in_array('fromString', get_class_methods($paramType))
+            ) {
+                $finalParams[$position] = $paramType::fromString($item[$param->getName()]);
                 continue;
             }
 
-            if ($param->getType()->getName() !== $itemType) {
-                throw new \Exception("{$class}::fromArray() method param {$param->getName()} must be of type {$param->getType()->getName()} but is of type {$itemType}");
-                break;
+            if ($paramType !== $itemType) {
+                if ($paramType !== '?' . $itemType) {
+                    throw new \Exception("{$class}::fromArray() method param {$param->getName()} must be of type {$paramType} but is of type {$itemType}");
+                    break;
+                }
             }
 
             $finalParams[$position] = $item[$param->getName()];
@@ -149,9 +156,18 @@ abstract class Model {
         return static::$DBPlugin?->deleteLine($this);
     }
 
+    /**
+     * @throws Exception
+     * @return self
+     */
     public function create(): self {
         static::$items[static::class][] = $this;
-        static::$DBPlugin?->createLine($this);
+        $r = static::$DBPlugin?->createLine($this);
+
+        if (is_bool($r) && !$r) {
+            throw new \Exception('Une erreur est survenue lors de la création du model');
+        }
+
         return $this;
     }
 }

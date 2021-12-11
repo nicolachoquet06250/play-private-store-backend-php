@@ -2,8 +2,11 @@
 
 namespace PPS\http;
 
-use \Psr\Http\Message\ResponseInterface as Response;
-use \Psr\Http\Message\ServerRequestInterface as Request;
+use \Psr\Http\Message\{
+    ResponseInterface as Response,
+    ServerRequestInterface as Request
+};
+use \Exception;
 
 abstract class Controller {
     public function __construct(

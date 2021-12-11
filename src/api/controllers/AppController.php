@@ -2,13 +2,21 @@
 
 namespace PPS\api\controllers;
 
+use Exception;
+use \Psr\Http\Message\{
+    ResponseInterface as Response,
+    ServerRequestInterface as Request
+};
 use PPS\http\Controller;
-use PPS\app\Websocket;
+use PPS\app\No;
 use PPS\decorators\{ 
     Controller as RouteGroup, 
     Get, Post, Put, Delete
 };
-use PPS\models\{ App, User };
+use PPS\models\{ 
+    App, 
+    User
+};
 use PPS\enums\ChannelType;
 
 /**
@@ -16,7 +24,14 @@ use PPS\enums\ChannelType;
  */
 #[RouteGroup('/app')]
 class AppController extends Controller {
-    
+    public function __construct(
+        Request $request, Response $response, array $args,
+        private No $no = new No()
+    ) {
+        parent::__construct($request, $response, $args);
+        $this->no->setRequest($this->request);
+    }
+
     #[Get('s')]
     public function getAllApps(): array {
         return App::getAll() ?? [];
@@ -37,42 +52,44 @@ class AppController extends Controller {
     #[Post()]
     public function createApp() {
         $createdApp = $this->request->getParsedBody();
-        [ 'socket'  => $socket ] = $this->request->getQueryParams();
-
-        $socket = $socket ?? 'ws://localhost:8001';
-
+        
         \http_response_code(201);
 
         $users = array_map(fn(User $c) => $c->id, User::getAll());
 
         $app = \PPS\models\App::fromArray($createdApp);
 
-        $app->create();
+        try {
+            $app->create();
 
-        (new Websocket($socket))->send(
-            channel: 'notify', 
-            type: ChannelType::GIVE, 
-            data: [
-                'type' => 'created',
-                'appId' => $app->id,
-                'appName' => $app->name,
-                'users' => $users
-            ]
-        );
+            $this->no->tify(
+                channel: 'notify', 
+                type: ChannelType::GIVE, 
+                message: [
+                    'type' => 'created',
+                    'appId' => $app->id,
+                    'appName' => $app->name,
+                    'users' => $users
+                ]
+            );
 
-        return [
-            'message' => "L'application \"{$app->name}\" à bien été créée",
-            'app' => $app
-        ];
+            return [
+                'message' => "L'application \"{$app->name}\" à bien été créée",
+                'notified' => $this->no->hasSocket(),
+                'app' => $app
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => 500,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
     #[Put('/{id}')]
     public function updateApp() {
         $body = $this->request->getParsedBody();
-        [ 'socket'  => $socket ] = $this->request->getQueryParams();
-
-        $socket = $socket ?? 'ws://localhost:8001';
-
+        
         $app = App::getFromId(\intval($this->id));
 
         if ($app) {
@@ -85,17 +102,21 @@ class AppController extends Controller {
 
             $app->update($body);
 
-            (new Websocket($socket))->send(
+            $this->no->tify(
                 channel: 'notify', 
                 type: ChannelType::GIVE, 
-                data: [
+                message: [
                     'type' => 'updated',
                     'appId' => $app->id,
                     'users' => $users
                 ]
             );
 
-            return $app;
+            return [
+                'message' => "L'application \"{$app->name}\" à bien été modifiée",
+                'notified' => $this->no->hasSocket(),
+                'app' => $app
+            ];
         }
 
         \http_response_code(404);
@@ -108,8 +129,28 @@ class AppController extends Controller {
 
     #[Delete('/{id}')]
     public function deleteApp() {
-        if (App::getFromId(intval($this->id))?->remove()) {
+        if (App::getFromId(intval($this->id))?->delete()) {
             \http_response_code(204);
+
+            $users = array_reduce(
+                User::getAll(), 
+                fn(array $r, User $c) => 
+                    in_array($this->id, $c->followed_apps) ? [...$r, $c->id] : $r, 
+                []
+            );
+            $users = array_reduce($users, fn(array $r, int $c) => 
+                in_array($c, $r) ? $r : [...$r, $c], []);
+
+            $this->no->tify(
+                channel: 'notify', 
+                type: ChannelType::GIVE, 
+                message: [
+                    'type' => 'deleted',
+                    'appId' => $this->id,
+                    'appName' => $this->name,
+                    'users' => $users
+                ]
+            );
 
             return App::getAll();
         } else {

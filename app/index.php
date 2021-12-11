@@ -1,6 +1,6 @@
 <?php
 
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 // error_reporting(E_ALL);
 // Rapporte les erreurs d'exécution de script
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
@@ -8,20 +8,21 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 // (variables non initialisées, variables mal orthographié
 //error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 
-use \PPS\app\{
+use PPS\app\{
     Application,
     Model
 };
-use \PPS\http\Cors;
-use \PPS\api\controllers\{
+use PPS\api\controllers\{
     UserController,
     AppController,
     HomeController
 };
-use \PPS\middlewares\{
+use PPS\middlewares\{
     Router, Json
 };
+use PPS\http\Cors;
 use PPS\db\SQLiteDbPlugin;
+use \BalintHorvath\DotEnv\DotEnv;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -29,7 +30,7 @@ Cors::enable();
 
 define('__ROOT__', realpath(__DIR__ . '/../'));
 
-$dotenv = new \BalintHorvath\DotEnv\DotEnv(__ROOT__);
+$dotenv = new DotEnv(__ROOT__);
 
 $app = new Application();
 

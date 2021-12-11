@@ -83,7 +83,7 @@ class UserController extends Controller {
 
     #[Delete('/{id}')]
     public function deleteUser() {
-        if (User::getFromId(intval($this->id))?->remove()) {
+        if (User::getFromId(intval($this->id))?->delete()) {
             \http_response_code(204);
 
             return User::getAll();

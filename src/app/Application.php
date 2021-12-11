@@ -35,6 +35,7 @@ class Application {
         } catch (\Exception $e) {
             header('Content-Type: application/json;charset=utf-8');
             \http_response_code(404);
+
             echo json_encode([
                 'status' => 404,
                 'message' => "La page que vous recherchez n'existe pas"
