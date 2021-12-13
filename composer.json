@@ -19,5 +19,8 @@
         "slim/psr7": "^1.5",
         "symfony/var-dumper": "^6.0",
         "balint-horvath/dotenv-php": "^1.0"
+    },
+    "scripts": {
+        "update-prod": "git pull"
     }
 }
