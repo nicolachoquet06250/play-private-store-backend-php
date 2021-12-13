@@ -24,6 +24,7 @@ Model::setDBPlugin(
 );
 
 if (!(empty(getenv('ENVIRONEMENT')) || getenv('ENVIRONEMENT') === 'dev')) {
+    http_response_code(404);
 
     echo <<<HTML
         <h1>404</h1>
