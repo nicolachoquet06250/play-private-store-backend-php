@@ -2,14 +2,12 @@
 
 namespace PPS\api\controllers;
 
-use Exception;
 use \Psr\Http\Message\{
     ResponseInterface as Response,
     ServerRequestInterface as Request
 };
-use PPS\http\Controller;
-use PPS\app\No;
 use PPS\decorators\{ 
+    ApplyMethodAfterInstanciate,
     Controller as RouteGroup, 
     Get, Post, Put, Delete
 };
@@ -17,20 +15,21 @@ use PPS\models\{
     App, 
     User
 };
-use PPS\enums\ChannelType;
+use PPS\{
+    enums\ChannelType,
+    http\Controller,
+    app\No
+};
+use Exception;
 
-/**
- * @property string $id 
- */
 #[RouteGroup('/app')]
 class AppController extends Controller {
-    public function __construct(
-        Request $request, Response $response, array $args,
-        private No $no = new No()
-    ) {
-        parent::__construct($request, $response, $args);
-        $this->no->setRequest($this->request);
-    }
+    public ?int $id = null;
+    #[ApplyMethodAfterInstanciate(
+        method: 'setRequest',
+        _this: [ 'request' ]
+    )]
+    public ?No $no = null;
 
     #[Get('s')]
     public function getAllApps(): array {
@@ -66,6 +65,7 @@ class AppController extends Controller {
                 channel: 'notify', 
                 type: ChannelType::GIVE, 
                 message: [
+                    'element' => 'app',
                     'type' => 'created',
                     'appId' => $app->id,
                     'appName' => $app->name,
@@ -90,7 +90,7 @@ class AppController extends Controller {
     public function updateApp() {
         $body = $this->request->getParsedBody();
         
-        $app = App::getFromId(\intval($this->id));
+        $app = App::getFromId($this->id);
 
         if ($app) {
             $users = array_reduce(
@@ -106,6 +106,7 @@ class AppController extends Controller {
                 channel: 'notify', 
                 type: ChannelType::GIVE, 
                 message: [
+                    'element' => 'app',
                     'type' => 'updated',
                     'appId' => $app->id,
                     'users' => $users
@@ -129,7 +130,7 @@ class AppController extends Controller {
 
     #[Delete('/{id}')]
     public function deleteApp() {
-        if (App::getFromId(intval($this->id))?->delete()) {
+        if (App::getFromId($this->id)?->delete()) {
             \http_response_code(204);
 
             $users = array_reduce(
@@ -145,6 +146,7 @@ class AppController extends Controller {
                 channel: 'notify', 
                 type: ChannelType::GIVE, 
                 message: [
+                    'element' => 'app',
                     'type' => 'deleted',
                     'appId' => $this->id,
                     'appName' => $this->name,

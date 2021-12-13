@@ -17,7 +17,7 @@ class No {
 
     public function tify(string $channel, ChannelType $type, array $message): void {
         if (!is_null($this->socket)) {
-            (new Websocket(static::$socket))->send(
+            (new Websocket($this->socket))->send(
                 channel: $channel, 
                 type: $type, 
                 data: $message
@@ -26,6 +26,6 @@ class No {
     }
 
     public function hasSocket(): bool {
-        return is_null($this->socket);
+        return !is_null($this->socket);
     }
 }

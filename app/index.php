@@ -15,7 +15,8 @@ use PPS\app\{
 use PPS\api\controllers\{
     UserController,
     AppController,
-    HomeController
+    HomeController,
+    CommentController
 };
 use PPS\middlewares\{
     Router, Json
@@ -34,13 +35,18 @@ $dotenv = new DotEnv(__ROOT__);
 
 $app = new Application();
 
-Model::setDBPlugin(new SQLiteDbPlugin());
+Model::setDBPlugin(
+    new SQLiteDbPlugin(
+        'sqlite:' . __ROOT__ . '/{db}.db'
+    )
+);
 
 $app->use(
     new Json, 
     new Router(
         UserController::class, 
-        AppController::class, 
+        AppController::class,
+        CommentController::class, 
         HomeController::class
     )
 );

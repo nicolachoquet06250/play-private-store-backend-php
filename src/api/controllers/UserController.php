@@ -2,18 +2,29 @@
 
 namespace PPS\api\controllers;
 
-use PPS\http\Controller;
-use PPS\decorators\Controller as RouteGroup;
-use PPS\decorators\{ Get, Post, Put, Delete };
-use PPS\models\User; 
+use PPS\decorators\{ 
+    ApplyMethodAfterInstanciate,
+    Controller as RouteGroup,
+    Get, Post, Put, Delete
+};
+use PPS\{
+    app\No,
+    models\User,
+    http\Controller,
+    enums\ChannelType
+};
 
-/**
- * @property string $id
- * @property string $email
- * @property string $password
- */
 #[RouteGroup('/user')]
 class UserController extends Controller {
+    public ?int $appId = null;
+    public ?int $id = null;
+    public ?string $email = null;
+    public ?string $password = null;
+    #[ApplyMethodAfterInstanciate(
+        method: 'setRequest',
+        _this: [ 'request' ]
+    )]
+    public ?No $no = null;
 
     #[Get('s')]
     public function getAllUsers(): array {
@@ -65,7 +76,7 @@ class UserController extends Controller {
     public function updateUser() {
         $body = $this->request->getParsedBody();
 
-        $user = User::getFromId(\intval($this->id));
+        $user = User::getFromId($this->id);
 
         if ($user) {
             $user->update($body);
@@ -83,7 +94,7 @@ class UserController extends Controller {
 
     #[Delete('/{id}')]
     public function deleteUser() {
-        if (User::getFromId(intval($this->id))?->delete()) {
+        if (User::getFromId($this->id)?->delete()) {
             \http_response_code(204);
 
             return User::getAll();
@@ -94,6 +105,61 @@ class UserController extends Controller {
                 'status' => 500,
                 'message' => "Une erreur est survenue lors de la suppression de l'utilisateur"
             ];
+        }
+    }
+
+    #[Post('/{id}/follow/{appId}')]
+    public function followApp() {
+        $user = User::getFromId($this->id);
+
+        if (!is_null($user)) {
+            $followedApps = $user->followed_apps;
+            $followedApps = [...$followedApps, $this->appId];
+
+            if ($user->update([ 'followed_apps' => $followedApps ])) {
+                $this->no->tify(
+                    channel: 'notify',
+                    type: ChannelType::GIVE,
+                    message: [
+                        'element' => 'user_followed_apps',
+                        'type' => 'updated',
+                        'users' => [$user]
+                    ]
+                );
+
+                return [
+                    'message' => "L'utilisateur à bien été modifié",
+                    'notified' => $this->no->hasSocket(),
+                    'user' => $user
+                ];
+            }
+        }
+    }
+
+    #[Delete('/{id}/unfollow/{appId}')]
+    public function unfollowApp() {
+        $user = User::getFromId($this->id);
+
+        if (!is_null($user)) {
+            $followedApps = array_reduce($user->followed_apps, fn($r, $c) => $c === $this->appId ? $r : [...$r, $c], []);
+
+            if ($user->update([ 'followed_apps' => $followedApps ])) {
+                $this->no->tify(
+                    channel: 'notify',
+                    type: ChannelType::GIVE,
+                    message: [
+                        'element' => 'user_followed_apps',
+                        'type' => 'updated',
+                        'users' => [$user]
+                    ]
+                );
+
+                return [
+                    'message' => "L'utilisateur à bien été modifié",
+                    'notified' => $this->no->hasSocket(),
+                    'user' => $user
+                ];
+            }
         }
     }
 }

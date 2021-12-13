@@ -11,10 +11,12 @@ use \Exception;
 use \PDOException;
 
 class SQLiteDbPlugin extends DBPlugin {
+    public function __construct(
+        public string $connectionString
+    ) {}
+
     public function getConnectionParameters(): array {
-        return [
-            'sqlite:' . __ROOT__ . '/{db}.db'
-        ];
+        return [ $this->connectionString ];
     }
 
     public function getPDO(array $variables): PDO {

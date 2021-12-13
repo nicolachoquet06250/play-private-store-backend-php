@@ -2,8 +2,10 @@
 
 namespace PPS\models;
 
-use \PPS\enums\Repos; 
-use \PPS\app\Model;
+use \PPS\{
+    enums\Repos,
+    app\Model
+};
 use \PPS\decorators\db\{
     Integer, Varchar,
     Json, Unique

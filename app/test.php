@@ -1,7 +1,7 @@
 <?php
 
 ini_set('display_errors', 1);
-error_reporting(E_ALL);
+error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
 use PPS\models\{
     User, App
@@ -9,12 +9,29 @@ use PPS\models\{
 use PPS\app\Model;
 use PPS\db\SQLiteDbPlugin;
 use PPS\enums\Repos;
+use \BalintHorvath\DotEnv\DotEnv;
 
 require __DIR__ . '/../vendor/autoload.php';
 
 define('__ROOT__', realpath(__DIR__ . '/../'));
 
-Model::setDBPlugin(new SQLiteDbPlugin());
+$dotenv = new DotEnv(__ROOT__);
+
+Model::setDBPlugin(
+    new SQLiteDbPlugin(
+        'sqlite:' . __ROOT__ . '/{db}.db'
+    )
+);
+
+if (!(empty(getenv('ENVIRONEMENT')) || getenv('ENVIRONEMENT') === 'dev')) {
+
+    echo <<<HTML
+        <h1>404</h1>
+
+        <p>PAGE NOT FOUND</p>
+    HTML;
+    return;
+}
 
 /*$user = User::fromArray([
     'firstname' => 'Nicolas',
@@ -39,6 +56,7 @@ dump(User::getAll());
 
 $user = User::getFrom('id', 1)[0];
 
+dump($user);
 dump('user downloaded apps', $user->getMyDowloadedApps());
 dump('user apps', $user->getMyApps());
 
