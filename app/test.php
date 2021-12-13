@@ -1,13 +1,17 @@
 <?php
 
 ini_set('display_errors', 1);
+//error_reporting(E_ALL);
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
 use PPS\models\{
     User, App
 };
 use PPS\app\Model;
-use PPS\db\SQLiteDbPlugin;
+use PPS\db\{
+    SQLiteDbPlugin,
+    MysqlDbPlugin
+};
 use PPS\enums\Repos;
 use \BalintHorvath\DotEnv\DotEnv;
 
@@ -17,11 +21,22 @@ define('__ROOT__', realpath(__DIR__ . '/../'));
 
 $dotenv = new DotEnv(__ROOT__);
 
-Model::setDBPlugin(
-    new SQLiteDbPlugin(
-        'sqlite:' . __ROOT__ . '/{db}.db'
-    )
-);
+if (getenv('ENVIRONEMENT') === 'dev') {
+    Model::setDBPlugin(
+        new SQLiteDbPlugin(
+            'sqlite:' . __ROOT__ . '/{db}.db'
+        )
+    );
+} else {
+    Model::setDBPlugin(
+        new MysqlDbPlugin(
+            host: getenv('DB_HOST'),
+            database: getenv('DB_NAME'),
+            username: getenv('DB_USERNAME'),
+            password: getenv('DB_PASSWORD')
+        )
+    );
+}
 
 if (!(empty(getenv('ENVIRONEMENT')) || getenv('ENVIRONEMENT') === 'dev')) {
     http_response_code(404);
@@ -54,12 +69,6 @@ foreach (User::defineDefaultFakeData() as $user) {
 }
 
 dump(User::getAll());
-
-$user = User::getFrom('id', 1)[0];
-
-dump($user);
-dump('user downloaded apps', $user->getMyDowloadedApps());
-dump('user apps', $user->getMyApps());
 
 /*$user->create();
 
@@ -95,6 +104,14 @@ echo '--------------------------------------------------------------------------
 }*/
 
 dump(App::getAll());
+
+echo '--------------------------------------------------------------------------------------------------------------------------------------------';
+
+$user = User::getFrom('id', 1)[0];
+
+dump($user);
+dump('user downloaded apps', $user->getMyDowloadedApps());
+dump('user apps', $user->getMyApps());
 
 /*$app->create();
 

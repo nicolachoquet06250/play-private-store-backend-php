@@ -2,12 +2,14 @@
 
 namespace PPS\app;
 
+use \PDO;
+
 abstract class DBPlugin {
     public abstract function getConnectionParameters(): array;
 
     public abstract function createTable(Model $model): bool;
 
-    public abstract function getPDO(array $variables): \PDO;
+    public abstract function getPDO(array $variables): PDO;
 
     public function getDatabase(): string {
         $composerFile = file_get_contents(__ROOT__ . '/composer.json');

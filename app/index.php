@@ -22,7 +22,10 @@ use PPS\middlewares\{
     Router, Json
 };
 use PPS\http\Cors;
-use PPS\db\SQLiteDbPlugin;
+use PPS\db\{
+    SQLiteDbPlugin,
+    MysqlDbPlugin
+};
 use \BalintHorvath\DotEnv\DotEnv;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -35,11 +38,22 @@ $dotenv = new DotEnv(__ROOT__);
 
 $app = new Application();
 
-Model::setDBPlugin(
-    new SQLiteDbPlugin(
-        'sqlite:' . __ROOT__ . '/{db}.db'
-    )
-);
+if (getenv('ENVIRONEMENT') === 'dev') {
+    Model::setDBPlugin(
+        new SQLiteDbPlugin(
+            'sqlite:' . __ROOT__ . '/{db}.db'
+        )
+    );
+} else {
+    Model::setDBPlugin(
+        new MysqlDbPlugin(
+            host: getenv('DB_HOST'),
+            database: getenv('DB_NAME'),
+            username: getenv('DB_USERNAME'),
+            password: getenv('DB_PASSWORD')
+        )
+    );
+}
 
 $app->use(
     new Json, 

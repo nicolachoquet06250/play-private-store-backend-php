@@ -17,11 +17,22 @@ define('__ROOT__', realpath(__DIR__ . '/../../'));
 
 $dotenv = new DotEnv(__ROOT__);
 
-Model::setDBPlugin(
-    new SQLiteDbPlugin(
-        'sqlite:' . __ROOT__ . '/{db}.db'
-    )
-);
+if (getenv('ENVIRONEMENT') === 'dev') {
+    Model::setDBPlugin(
+        new SQLiteDbPlugin(
+            'sqlite:' . __ROOT__ . '/{db}.db'
+        )
+    );
+} else {
+    Model::setDBPlugin(
+        new MysqlDbPlugin(
+            host: getenv('DB_HOST'),
+            database: getenv('DB_NAME'),
+            username: getenv('DB_USERNAME'),
+            password: getenv('DB_PASSWORD')
+        )
+    );
+}
 
 if (!empty(getenv('FAKE_DATA_CREATED'))) {
     http_response_code(404);
