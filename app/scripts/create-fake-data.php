@@ -11,9 +11,9 @@ use PPS\db\SQLiteDbPlugin;
 use PPS\enums\Repos;
 use \BalintHorvath\DotEnv\DotEnv;
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../../vendor/autoload.php';
 
-define('__ROOT__', realpath(__DIR__ . '/../'));
+define('__ROOT__', realpath(__DIR__ . '/../../'));
 
 $dotenv = new DotEnv(__ROOT__);
 
