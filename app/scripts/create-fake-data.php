@@ -7,7 +7,10 @@ use PPS\models\{
     User, App
 };
 use PPS\app\Model;
-use PPS\db\SQLiteDbPlugin;
+use PPS\db\{
+    SQLiteDbPlugin,
+    MysqlDbPlugin
+};
 use PPS\enums\Repos;
 use \BalintHorvath\DotEnv\DotEnv;
 
