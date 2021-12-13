@@ -3,6 +3,7 @@
 namespace PPS\app;
 
 use \PDO;
+use \Exception;
 
 abstract class Model {
     protected static array $items = [];
@@ -129,6 +130,15 @@ abstract class Model {
         return array_reduce(static::getAll(), fn(Model|null $r, Model $c) => 
             $c->id === $id ? $c : $r, null);
     }
+
+    /**
+     * @param string $field
+     * @param mixed $value
+     * @return self[]
+     */
+    static public function getFrom(string $field, mixed $value): array {
+        return static::$DBPlugin?->getFrom($field, $value, static::class);
+    }
     
     public function update(?array $item): bool {
         if (!empty($item)) {
@@ -162,10 +172,14 @@ abstract class Model {
      */
     public function create(): self {
         static::$items[static::class][] = $this;
-        $r = static::$DBPlugin?->createLine($this);
+        try {
+            $r = static::$DBPlugin?->createLine($this);
+        } catch (Exception $e) {
+            throw $e;
+        }
 
         if (is_bool($r) && !$r) {
-            throw new \Exception('Une erreur est survenue lors de la création du model');
+            throw new Exception('Une erreur est survenue lors de la création du model');
         }
 
         return $this;

@@ -58,4 +58,18 @@ class User extends Model {
         return array_reduce(static::getAll(), fn(User|null $r, User $c) => 
             $c->email === $email && $c->password === $password ? $c : $r, null);
     }
+
+    /**
+     * @return App[]
+     */
+    public function getMyApps(): array {
+        return App::getFrom('author', $this->id);
+    }
+
+    /**
+     * @return App[]
+     */
+    public function getMyDowloadedApps(): array {
+        return array_reduce($this->followed_apps, fn(array $r, int $c) => [...$r, (App::getFrom('id', $c)[0] ?? [])], []);
+    }
 }

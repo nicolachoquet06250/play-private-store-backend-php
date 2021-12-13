@@ -7,6 +7,8 @@ use \PPS\app\{
     Model
 };
 use \PDO;
+use \Exception;
+use \PDOException;
 
 class SQLiteDbPlugin extends DBPlugin {
     public function getConnectionParameters(): array {
@@ -153,7 +155,7 @@ class SQLiteDbPlugin extends DBPlugin {
                         $_r[$_c->getName()] = $_c->getValue($c);
                         return $_r;
                     }, []);
-                    return $props;
+                    return [...$r, ...$props];
                 }, [])
             ];
         }
@@ -175,7 +177,7 @@ class SQLiteDbPlugin extends DBPlugin {
         $withoutRowid = $hasAutoIncrement ? '' : ' WITHOUT ROWID';
         $request .= "){$withoutRowid}";
 
-        //dump($request);
+        // dump($request);
 
         $r = $this->getPDO($model->getDBVariables())->prepare($request);
         $r->execute();
@@ -237,8 +239,25 @@ class SQLiteDbPlugin extends DBPlugin {
 
         //dump($request, $values);
 
-        $r = $conn->prepare($request);
-        $r->execute($values);
+        try {
+            $r = $conn->prepare($request);
+            $r->execute($values);
+        } catch (PDOException $e) {
+            preg_match_all(
+                '/SQLSTATE\[[0-9]+\]:\ [A-Za-z\ ]+:\ [0-9]+\ (?<constraint_type>[A-Z]+)\ constraint failed:\ (?<table_name>[a-z]+)\.(?<field_name>[a-zA-Z\_]+)/m', 
+                $e->getMessage(), 
+                $matches, PREG_SET_ORDER, 0
+            );
+            if (!empty($matches)) {
+                $matches = array_reduce(array_keys($matches[0]), fn($r, $c) => is_numeric($c) ? $r : [...$r, $c => $matches[0][$c]], []);
+            
+                if ($matches['constraint_type'] === 'UNIQUE') {
+                    throw new Exception("Le champ {$matches['field_name']} existe déjà");
+                }
+            }
+            
+            throw $e;
+        }
 
         $model->id = $conn->lastInsertId();
 

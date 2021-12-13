@@ -28,10 +28,19 @@ Model::setDBPlugin(new SQLiteDbPlugin());
 ]);*/
 
 foreach (User::defineDefaultFakeData() as $user) {
-    $user->create();
+    try {
+        $user->create();
+    } catch (Exception $e) {
+        dump($e->getMessage(), $user->email);
+    }
 }
 
 dump(User::getAll());
+
+$user = User::getFrom('id', 1)[0];
+
+dump('user downloaded apps', $user->getMyDowloadedApps());
+dump('user apps', $user->getMyApps());
 
 /*$user->create();
 
@@ -62,9 +71,9 @@ echo '--------------------------------------------------------------------------
     'author' => 1
 ]);*/
 
-foreach (App::defineDefaultFakeData() as $app) {
+/*foreach (App::defineDefaultFakeData() as $app) {
     $app->create();
-}
+}*/
 
 dump(App::getAll());
 
