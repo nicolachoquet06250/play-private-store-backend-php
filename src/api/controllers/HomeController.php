@@ -103,6 +103,6 @@ class HomeController extends Controller {
             }, 4000);
          })()
       </script>
-HTML;
-    }
+      HTML;
+   }
 }

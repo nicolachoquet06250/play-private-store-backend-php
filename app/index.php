@@ -15,13 +15,13 @@ use PPS\app\{
 use PPS\api\controllers\{
     UserController,
     AppController,
-    HomeController,
-    CommentController
+    CommentController,
+    HomeController
 };
 use PPS\middlewares\{
-    Router, Json
+    Router, Json, Cors, 
+    ModelDbPlugin
 };
-use PPS\http\Cors;
 use PPS\db\{
     SQLiteDbPlugin,
     MysqlDbPlugin
@@ -30,39 +30,35 @@ use \BalintHorvath\DotEnv\DotEnv;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-Cors::enable();
-
 define('__ROOT__', realpath(__DIR__ . '/../'));
 
 $dotenv = new DotEnv(__ROOT__);
 
-$app = new Application();
-
-if (getenv('ENVIRONEMENT') === 'dev') {
-    Model::setDBPlugin(
-        new SQLiteDbPlugin(
-            'sqlite:' . __ROOT__ . '/{db}.db'
+(new Application())
+    ->use(new Cors())
+    ->use(
+        new ModelDbPlugin(
+            new SQLiteDbPlugin(
+                connectionString: 'sqlite:' . __ROOT__ . '/{db}.db'
+            ),
+            condition: getenv('ENVIRONEMENT') === 'dev'
         )
-    );
-} else {
-    Model::setDBPlugin(
-        new MysqlDbPlugin(
-            host: getenv('DB_HOST'),
-            database: getenv('DB_NAME'),
-            username: getenv('DB_USERNAME'),
-            password: getenv('DB_PASSWORD')
-        )
-    );
-}
-
-$app->use(
-    new Json, 
-    new Router(
-        UserController::class, 
-        AppController::class,
-        CommentController::class, 
-        HomeController::class
     )
-);
-
-$app->run();
+    ->use(
+        new ModelDbPlugin(
+            new MysqlDbPlugin(
+                host: getenv('DB_HOST'),
+                database: getenv('DB_NAME'),
+                username: getenv('DB_USERNAME'),
+                password: getenv('DB_PASSWORD')
+            ),
+            condition: !(getenv('ENVIRONEMENT') === 'dev')
+        )
+    )
+    ->use(new Json)
+    ->use((new Router())
+        ->use(UserController::class)
+        ->use(AppController::class)
+        ->use(CommentController::class)
+        //->use(HomeController::class)
+    )->run();

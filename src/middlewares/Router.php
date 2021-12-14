@@ -19,6 +19,11 @@ class Router extends Middleware {
         $this->usedRoutes = $usedRoutes;
     }
 
+    public function use(string $usedRoute): self {
+        $this->usedRoutes[] = $usedRoute;
+        return $this;
+    }
+
     public function manage() {
         foreach ($this->usedRoutes as $controller) {
             $r = new \ReflectionClass($controller);
