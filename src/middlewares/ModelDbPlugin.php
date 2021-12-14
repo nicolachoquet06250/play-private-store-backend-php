@@ -18,5 +18,7 @@ class ModelDbPlugin extends Middleware {
         if ($this->condition) {
             Model::setDBPlugin($this->plugin);
         }
+
+        return $this->app;
     }
 }
