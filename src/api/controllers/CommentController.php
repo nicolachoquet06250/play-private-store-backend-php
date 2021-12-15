@@ -27,10 +27,13 @@ class CommentController extends Controller {
     public int $appId;
     public ?int $id = null;
     #[ApplyMethodAfterInstanciate(
-        method: 'setRequest',
-        _this: [ 'request' ]
+        type: ApplyMethodAfterInstanciate::NOTIFIER
     )]
     public ?No $no = null;
+    #[ApplyMethodAfterInstanciate(
+        type: ApplyMethodAfterInstanciate::BODY
+    )]
+    public ?array $body = [];
 
     #[Get('s')]
     public function getAllComments(): array {
@@ -39,7 +42,7 @@ class CommentController extends Controller {
 
     #[Post()]
     public function createComment() {
-        $comment = $this->request->getParsedBody();
+        $comment = $this->body;
 
         $app = App::getFromId($this->appId);
 

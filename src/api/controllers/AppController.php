@@ -26,10 +26,13 @@ use Exception;
 class AppController extends Controller {
     public ?int $id = null;
     #[ApplyMethodAfterInstanciate(
-        method: 'setRequest',
-        _this: [ 'request' ]
+        type: ApplyMethodAfterInstanciate::NOTIFIER
     )]
     public ?No $no = null;
+    #[ApplyMethodAfterInstanciate(
+        type: ApplyMethodAfterInstanciate::BODY
+    )]
+    public ?array $body = [];
 
     #[Get('s')]
     public function getAllApps(): array {
@@ -50,7 +53,7 @@ class AppController extends Controller {
 
     #[Post()]
     public function createApp() {
-        $createdApp = $this->request->getParsedBody();
+        $createdApp = $this->body;
         
         \http_response_code(201);
 
@@ -88,7 +91,7 @@ class AppController extends Controller {
 
     #[Put('/{id}')]
     public function updateApp() {
-        $body = $this->request->getParsedBody();
+        $body = $this->body;
         
         $app = App::getFromId($this->id);
 

@@ -21,10 +21,13 @@ class UserController extends Controller {
     public ?string $email = null;
     public ?string $password = null;
     #[ApplyMethodAfterInstanciate(
-        method: 'setRequest',
-        _this: [ 'request' ]
+        type: ApplyMethodAfterInstanciate::NOTIFIER
     )]
     public ?No $no = null;
+    #[ApplyMethodAfterInstanciate(
+        type: ApplyMethodAfterInstanciate::BODY
+    )]
+    public ?array $body = [];
 
     #[Get('s')]
     public function getAllUsers(): array {
@@ -45,16 +48,15 @@ class UserController extends Controller {
 
     #[Post()]
     public function createUser() {
-        $createdUser = $this->request->getParsedBody();
         [
             'firstname' => $firstname, 
             'lastname' => $lastname
-        ] = $createdUser;
+        ] = $this->body;
 
         try {
             http_response_code(201);
 
-            $user = User::fromArray($createdUser);
+            $user = User::fromArray($this->body);
 
             $user->create();
             
@@ -74,12 +76,10 @@ class UserController extends Controller {
 
     #[Put('/{id}')]
     public function updateUser() {
-        $body = $this->request->getParsedBody();
-
         $user = User::getFromId($this->id);
 
         if ($user) {
-            $user->update($body);
+            $user->update($this->body);
 
             return $user;
         }
@@ -106,6 +106,11 @@ class UserController extends Controller {
                 'message' => "Une erreur est survenue lors de la suppression de l'utilisateur"
             ];
         }
+    }
+
+    #[Post('/login')]
+    public function login() {
+        
     }
 
     #[Post('/{id}/follow/{appId}')]

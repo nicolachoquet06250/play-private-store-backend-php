@@ -34,24 +34,35 @@ abstract class Controller {
         foreach ($props as $prop) {
             $propType = (string)$prop->getType();
 
-            if (!in_array($propType, ['int', '?int', 'string', '?string', 'array', '?array', 'float', '?float'])) {
-                $this->{$prop->getName()} = new (str_replace('?', '', $propType))();
+            if (!empty(($attrs = $prop->getAttributes(\PPS\decorators\ApplyMethodAfterInstanciate::class)))) {
+                $attr = $attrs[0]->newInstance();
+
+                $var = null;
+                if (!in_array($propType, ['int', '?int', 'string', '?string', 'array', '?array', 'float', '?float'])) {
+                    $this->{$prop->getName()} = new (str_replace('?', '', $propType))();
+                } else {
+                    foreach ($attr->target as $v) {
+                        if ($var === null) {
+                            $var = $$v;
+                        } else {
+                            $var = $var->$v;
+                        }
+                    }
+                }
                 
-                $attrs = $prop->getAttributes(\PPS\decorators\ApplyMethodAfterInstanciate::class);
+                $params = [];
+                if (!is_null($attr->_this)) {
+                    $params = [...$params, ...array_reduce($attr->_this, fn($r, $c) => [...$r, $this->{$c}], [])];
+                }
 
-                if (!empty($attrs)) {
-                    $attr = $attrs[0]->newInstance();
-                    
-                    $params = [];
-                    if (!is_null($attr->_this)) {
-                        $params = [...$params, ...array_reduce($attr->_this, fn($r, $c) => [...$r, $this->{$c}], [])];
-                    }
+                if (!is_null($attr->data)) {
+                    $params = [...$params, ...array_reduce(array_keys($attr->data), fn($r, $c) => [...$r, $attr->data[$c]], [])];
+                }
 
-                    if (!is_null($attr->data)) {
-                        $params = [...$params, ...array_reduce(array_keys($attr->data), fn($r, $c) => [...$r, $attr->data[$c]], [])];
-                    }
-
+                if (is_null($var)) {
                     $this->{$prop->getName()}->{$attr->method}(...$params);
+                } else {
+                    $this->{$prop->getName()} = $var->{$attr->method}(...$params);
                 }
             }
         }

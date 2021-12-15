@@ -1,12 +1,5 @@
 <?php
-
 ini_set('display_errors', 0);
-// error_reporting(E_ALL);
-// Rapporte les erreurs d'exécution de script
-error_reporting(E_ERROR | E_WARNING | E_PARSE);
-// Rapporter les E_NOTICE peut vous aider à améliorer vos scripts
-// (variables non initialisées, variables mal orthographié
-//error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 
 use PPS\app\{
     Application,
@@ -33,6 +26,16 @@ require __DIR__ . '/../vendor/autoload.php';
 define('__ROOT__', realpath(__DIR__ . '/../'));
 
 $dotenv = new DotEnv(__ROOT__);
+
+if (empty(getenv('ENVIRONEMENT')) || getenv('ENVIRONEMENT') === 'dev') {
+    ini_set('display_errors', 1);
+    // error_reporting(E_ALL);
+    // Rapporte les erreurs d'exécution de script
+    error_reporting(E_ERROR | E_WARNING | E_PARSE);
+    // Rapporter les E_NOTICE peut vous aider à améliorer vos scripts
+    // (variables non initialisées, variables mal orthographié
+    //error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
+}
 
 (new Application())
     ->use(new Cors())
