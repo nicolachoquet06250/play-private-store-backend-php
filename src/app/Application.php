@@ -38,7 +38,7 @@ class Application {
 
             echo json_encode([
                 'status' => 404,
-                'message' => "La page que vous recherchez n'existe pas"
+                'message' => (empty(getenv('ENVIRONEMENT')) || getenv('ENVIRONEMENT') === 'dev' ? $e->getMessage() : "La page que vous recherchez n'existe pas")
             ]);
         }
     }
