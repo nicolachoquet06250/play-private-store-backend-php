@@ -36,10 +36,12 @@ class App extends Model {
             nullable: true
         )]
         public ?string $description,
-        #[Real]
-        public float $stars,
         #[Integer]
         public int $author,
+        /*#[Real(
+            default: 0.0
+        )]
+        public float $stars = 0.0,*/
         #[Json(
             default: '[]'
         )]

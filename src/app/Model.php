@@ -44,6 +44,15 @@ abstract class Model {
         return [];
     }
 
+    private static function getItemType($item, $name) {
+        return match(gettype(isset($item[$name]) ? $item[$name] : null)) {
+            'integer' => 'int',
+            'double' => 'float',
+            'object' => get_class($item[$name]),
+            default => gettype(isset($item[$name]) ? $item[$name] : null)
+        };
+    }
+
     /**
      * @param array $item
      * @return Model
@@ -62,12 +71,7 @@ abstract class Model {
         }
 
         foreach ($params as $position => $param) {
-            $itemType = match(gettype(isset($item[$param->getName()]) ? $item[$param->getName()] : null)) {
-                'integer' => 'int',
-                'double' => 'float',
-                'object' => get_class($item[$param->getName()]),
-                default => gettype(isset($item[$param->getName()]) ? $item[$param->getName()] : null)
-            };
+            $itemType = static::getItemType($item, $param->getName());
 
             if (!isset($item[$param->getName()])) {
                 if ($param->isDefaultValueAvailable()) {
@@ -91,6 +95,16 @@ abstract class Model {
                 $finalParams[$position] = $paramType::fromString($item[$param->getName()]);
                 continue;
             }
+
+            if (($paramType === 'float' || $paramType === '?float') && $itemType === 'int') {
+                $item[$param->getName()] = floatval($item[$param->getName()]);
+            } else if (($paramType === 'int' || $paramType === '?int') && $itemType === 'float') {
+                $item[$param->getName()] = intval($item[$param->getName()]);
+            }
+
+            $itemType = static::getItemType($item, $param->getName());
+
+            //dump($param->getName(), $paramType, $itemType);
 
             if ($paramType !== $itemType) {
                 if ($paramType !== '?' . $itemType) {

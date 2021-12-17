@@ -208,7 +208,7 @@ class SQLiteDbPlugin extends DBPlugin {
                     return $props;
                 }, []);
 
-                if ($value || is_string($value) && $value === '') {
+                if ($value || is_string($value) && $value === '' || ((is_int($value) || is_float($value)) && $value === 0)) {
                     if (is_array($value) || is_object($value)) {
                         $value = json_encode($value);
                     }
